@@ -1,20 +1,15 @@
-export const STORED_AI_KEY = "self-driving-neuralnetwork";
+export class Config {
+    static readonly ROAD_WIDTH = 300;
+    static readonly CAR_WIDTH = 30;
+    static readonly CAR_HEIGHT = 50;
 
-export const ROAD_WIDTH = 300;
-export const CAR_WIDTH = 30;
-export const CAR_HEIGHT = 50;
+    static readonly NUM_TRAFFIC_CARS = 50;
 
-export const AI_CAR_ALPHA = 0.1;
-export const AI_NUM_CARS = 100;
-export const AI_MUTATION_BASERATE = 0.2;
-export const AI_MUTATION_GROUPS = [
-    { threshold: 0.9, rate: 10 },
-    { threshold: 0.8, rate: 5 },
-    { threshold: 0.75, rate: 2 },
-    { threshold: 0.5, rate: 1.5 },
-    { threshold: 0.0, rate: 1 },
-];
+    static readonly UPDATES_PER_SECOND = 60;
 
-export const NUM_TRAFFIC_CARS = 50;
-
-export const UPDATES_PER_SECOND = 60;
+    static readonly AI_CAR_ALPHA = 0.5;
+    static readonly AI_NUM_CARS = 100;
+    static readonly AI_MUTATION_PROBABILITY = 0.05;
+    static readonly AI_MUTATION_RATE = 0.5;
+    static readonly AI_ROUND_DURATION_IN_SECONDS = 30;
+}

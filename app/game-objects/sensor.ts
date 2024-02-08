@@ -1,19 +1,19 @@
 import { Car } from "./car";
 import { Point2D } from "../math/point";
 import * as geom from "math/geom";
-import * as mathh from "math/math";
+import { Mathh } from "math/math";
 import { GameObject } from "game-objects/game-object";
 
 export class Sensor implements GameObject {
-    public rayCount: number;
+    public readonly rayCount: number;
     public readings: ({ point: Point2D; offset: number } | null)[] = [];
 
-    private car: Car;
-    private rayLength: number;
-    private fov: number;
+    private readonly car: Car;
+    private readonly rayLength: number;
+    private readonly  fov: number;
     private rays: Point2D[][] = [];
 
-    constructor(car: Car, rayCount = 11, rayLength = 250, fov = Math.PI / 2) {
+    constructor(car: Car, rayCount = 11, rayLength = 300, fov = Math.PI / 1.25) {
         this.car = car;
         this.rayCount = rayCount;
         this.rayLength = rayLength;
@@ -63,11 +63,7 @@ export class Sensor implements GameObject {
             if (this.rayCount === 1) {
                 rayAngle = 0;
             } else {
-                rayAngle = mathh.lerp(
-                    -this.fov / 2,
-                    this.fov / 2,
-                    i / (this.rayCount - 1)
-                );
+                rayAngle = Mathh.lerp(-this.fov / 2, this.fov / 2, i / (this.rayCount - 1));
             }
 
             rayAngle += this.car.angle;
@@ -91,12 +87,7 @@ export class Sensor implements GameObject {
         for (const polygon of collisionPolygons) {
             // It's a line
             if (polygon.length == 2) {
-                const intersection = geom.getIntersection(
-                    ray[0],
-                    ray[1],
-                    polygon[0],
-                    polygon[1]
-                );
+                const intersection = geom.getIntersection(ray[0], ray[1], polygon[0], polygon[1]);
                 if (intersection) {
                     intersections.push(intersection);
                 }

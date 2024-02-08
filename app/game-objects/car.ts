@@ -4,6 +4,7 @@ import { Point2D } from "math/point";
 import { Sensor } from "game-objects/sensor";
 import * as geom from "math/geom";
 import { GameObject } from "game-objects/game-object";
+import { NeuralNetwork } from "nn/neural-network";
 
 export interface CarOptions {
     x: number;
@@ -14,6 +15,8 @@ export interface CarOptions {
     acceleration?: number;
     friction?: number;
     maxSpeed?: number;
+    normalColor?: string;
+    damagedColor?: string;
 }
 
 export class Car implements GameObject {
@@ -23,8 +26,13 @@ export class Car implements GameObject {
     public height: number;
     public angle: number = 0;
     public polygon: Point2D[] = [];
-    public ai: SimpleDenseNN | null = null;
-    public damaged: boolean = false;
+    public damaged: boolean;
+    public normalColor: string;
+    public damagedColor: string;
+    public drawSensor: boolean;
+    public drawStroke: boolean;
+
+    public ai: NeuralNetwork | null = null;
 
     private speed: number = 0;
     private maxSpeed: number;
@@ -41,7 +49,11 @@ export class Car implements GameObject {
         controls: Controls,
         acceleration: number = 0.1,
         friction: number = 0.05,
-        maxSpeed: number = 3
+        maxSpeed: number = 3,
+        normalColor: string = "black",
+        damagedColor: string = "white",
+        drawSensor: boolean = false,
+        drawStroke: boolean = false
     ) {
         this.x = x;
         this.y = y;
@@ -52,14 +64,20 @@ export class Car implements GameObject {
         this.friction = friction;
         this.maxSpeed = maxSpeed;
 
+        this.damaged = false;
+        this.normalColor = normalColor;
+        this.damagedColor = damagedColor;
+        this.drawSensor = drawSensor;
+        this.drawStroke = drawStroke;
+
         switch (controls.controlType) {
             case ControlType.PLAYER:
                 this.sensor = new Sensor(this);
                 break;
             case ControlType.AI:
                 this.sensor = new Sensor(this);
-                this.ai = new SimpleDenseNN([this.sensor.rayCount + 2, 6, 4]);
-                this.ai.initialize();
+                this.ai = new SimpleDenseNN([this.sensor.rayCount + 2, 18, 4]);
+                this.ai.randomize();
                 break;
             case ControlType.BOT:
                 break;
@@ -75,7 +93,9 @@ export class Car implements GameObject {
             options.controls,
             options.acceleration,
             options.friction,
-            options.maxSpeed
+            options.maxSpeed,
+            options.normalColor,
+            options.damagedColor
         );
     }
 
@@ -108,15 +128,15 @@ export class Car implements GameObject {
         }
     }
 
-    draw(ctx: CanvasRenderingContext2D, color: string = "white", drawSensor: boolean = false) {
-        if (this.sensor && drawSensor) {
+    draw(ctx: CanvasRenderingContext2D) {
+        if (!this.damaged && this.sensor && this.drawSensor) {
             this.sensor.draw(ctx);
         }
 
-        ctx.fillStyle = color;
+        ctx.fillStyle = this.normalColor;
 
         if (this.damaged) {
-            ctx.fillStyle = "white";
+            ctx.fillStyle = this.damagedColor;
         }
 
         ctx.beginPath();
@@ -125,6 +145,13 @@ export class Car implements GameObject {
             ctx.lineTo(this.polygon[i].x, this.polygon[i].y);
         }
         ctx.fill();
+        ctx.closePath();
+
+        if (!this.damaged && this.drawStroke) {
+            ctx.strokeStyle = "yellow";
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
     }
 
     private move() {

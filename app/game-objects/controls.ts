@@ -16,7 +16,7 @@ export class Controls implements GameObject {
     public enter: boolean = false;
 
     public keyMap: { [key: string]: boolean } = {};
-    public controlType: ControlType;
+    public readonly controlType: ControlType;
 
     constructor(controlType: ControlType) {
         this.controlType = controlType;
@@ -26,7 +26,7 @@ export class Controls implements GameObject {
                 this.bindKeys();
                 break;
             case ControlType.BOT:
-                //this.keyMap["ArrowUp"] = true;
+                this.keyMap["ArrowUp"] = true;
                 break;
         }
     }

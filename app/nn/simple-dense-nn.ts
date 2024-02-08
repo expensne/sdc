@@ -1,99 +1,116 @@
-import * as mathh from "math/math";
+import { Mathh } from "math/math";
 import { NeuralNetwork } from "nn/neural-network";
+import { Matrix } from "math/matrix";
 
 export class SimpleDenseNN implements NeuralNetwork {
-    private layers: Layer[];
+    public readonly neuronsPerLayer: number[];
+    private readonly initFunc: (...args: any[]) => number;
+    protected readonly layers: Layer[];
 
-    constructor(layerSizes: number[]) {
-        this.layers = new Array(layerSizes.length - 1);
+    constructor(neuronsPerLayer: number[]) {
+        this.neuronsPerLayer = neuronsPerLayer;
+        this.initFunc = Mathh.normal;
+
+        this.layers = new Array(neuronsPerLayer.length - 1);
         for (let i = 0; i < this.layers.length; ++i) {
-            this.layers[i] = new Layer(layerSizes[i], layerSizes[i + 1]);
+            this.layers[i] = new Layer(neuronsPerLayer[i], neuronsPerLayer[i + 1], this.initFunc);
         }
     }
 
-    public initialize(): void {
+    randomize(): void {
         this.layers.forEach((layer) => layer.randomize());
     }
 
-    public predict(inputs: number[]): number[] {
-        let output = inputs;
+    predict(inputs: number[]): number[] {
+        let outputMat = Matrix.fromArray(inputs);
         for (let i = 0; i < this.layers.length; ++i) {
-            output = this.layers[i].forward(output);
+            outputMat = this.layers[i].forward(outputMat);
         }
-        return output;
+        return outputMat.toArray().map((x) => Math.round(x));
     }
 
-    public getModel(): { weights: number[][][]; biases: number[][] } {
-        const weights = this.layers.map((layer) => layer.weights);
-        const biases = this.layers.map((layer) => layer.biases);
-
-        return { weights, biases };
-    }
-
-    public setModel({ weights, biases }: { weights: number[][][]; biases: number[][] }): void {
-        weights = JSON.parse(JSON.stringify(weights));
-        biases = JSON.parse(JSON.stringify(biases));
-
-        this.layers.forEach((layer, i) => {
-            layer.weights = weights[i];
-            layer.biases = biases[i];
-        });
-    }
-
-    public mutate(mutationRate: number): void {
+    mutate(mutationPropability: number, mutateRate: number): void {
         this.layers.forEach((layer) => {
-            for (let i = 0; i < layer.numInputs; ++i) {
-                for (let j = 0; j < layer.numOutputs; ++j) {
-                    let oldWeight = layer.weights[i][j];
-                    let newWeight = oldWeight + mathh.normal(0, mutationRate);
-                    layer.weights[i][j] = newWeight;
-                }
-            }
-
-            for (let i = 0; i < layer.numOutputs; ++i) {
-                let oldBias = layer.biases[i];
-                let newBias = oldBias + mathh.normal(0, mutationRate);
-                layer.biases[i] = newBias;
-            }
+            layer.weight.map((w, _, __) =>
+                Mathh.randomTrue(mutationPropability) ? this.initFunc(w, mutateRate) : w
+            );
+            layer.bias.map((b, _, __) =>
+                Mathh.randomTrue(mutationPropability) ? this.initFunc(b, mutateRate) : b
+            );
         });
+    }
+
+    crossover(other: NeuralNetwork): NeuralNetwork {
+        if (!(other instanceof SimpleDenseNN)) {
+            throw new Error("Cannot crossover with different type of neural network");
+        }
+
+        const thisChild = this.copy() as SimpleDenseNN;
+        const otherLayers = other.layers;
+
+        const crossoverPoint = Math.floor(Math.random() * this.layers.length);
+        for (let i = crossoverPoint; i < this.layers.length; ++i) {
+            thisChild.layers[i].weight = otherLayers[i].weight;
+            thisChild.layers[i].bias = otherLayers[i].bias;
+        }
+
+        return thisChild;
+    }
+
+    getModel(): string {
+        const weightsSerialized = this.layers.map((layer) => layer.weight.serialize());
+        const biasesSerialized = this.layers.map((layer) => layer.bias.serialize());
+        const internals = [weightsSerialized, biasesSerialized];
+        return JSON.stringify(internals);
+    }
+
+    setModel(model: string): void {
+        const internals = JSON.parse(model);
+        const weights = internals[0];
+        const biases = internals[1];
+        this.layers.forEach((layer, i) => {
+            layer.weight = Matrix.deserialize(weights[i])!;
+            layer.bias = Matrix.deserialize(biases[i])!;
+        });
+    }
+
+    copy(): NeuralNetwork {
+        const nn = new SimpleDenseNN(this.neuronsPerLayer);
+        nn.setModel(this.getModel());
+        return nn;
     }
 }
 
 class Layer {
-    public numInputs: number;
-    public numOutputs: number;
+    public readonly numInputs: number;
+    public readonly numOutputs: number;
 
-    public weights: number[][];
-    public biases: number[];
+    public weight: Matrix;
+    public bias: Matrix;
 
-    constructor(numInputs: number, numOutputs: number) {
+    private readonly initFunc: () => number;
+
+    constructor(
+        numInputs: number,
+        numOutputs: number,
+        initFunc: (...args: any[]) => number = Mathh.normal
+    ) {
         this.numInputs = numInputs;
         this.numOutputs = numOutputs;
+        this.initFunc = initFunc;
 
-        this.weights = new Array(numInputs).fill(0).map(() => new Array(numOutputs).fill(0));
-        this.biases = new Array(numOutputs).fill(0);
+        this.weight = new Matrix(numInputs, numOutputs);
+        this.bias = new Matrix(1, numOutputs);
     }
 
-    public randomize(): void {
-        this.weights = this.weights.map((column) => column.map(() => mathh.normal()));
-        this.biases = this.biases.map(() => mathh.normal());
+    randomize(): void {
+        this.weight.randomize(() => this.initFunc());
+        this.bias.randomize(() => this.initFunc());
     }
 
-    public forward(inputs: number[]): number[] {
-        const output = new Array(this.numOutputs).fill(0);
-
-        for (let i = 0; i < this.numInputs; ++i) {
-            for (let j = 0; j < this.numOutputs; ++j) {
-                output[j] += inputs[i] * this.weights[i][j];
-            }
-        }
-
-        for (let i = 0; i < this.numOutputs; ++i) {
-            //output[i] = mathh.sigmoid(output[i] + this.biases[i]);
-            //output[i] = output[i] + this.biases[i];
-            output[i] = this.biases[i] < output[i] ? 1 : 0;
-        }
-
-        return output;
+    forward(input: Matrix): Matrix {
+        const raw = input.transposed().dot(this.weight).add(this.bias);
+        const activated = raw.map((x) => Mathh.sigmoid(x));
+        return activated.transposed();
     }
 }

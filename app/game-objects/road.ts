@@ -1,20 +1,20 @@
-import * as mathh from "math/math";
+import { Mathh } from "math/math";
 import { Point2D } from "math/point";
 import { GameObject } from "game-objects/game-object";
 
 export class Road implements GameObject {
-    private left: number;
-    private right: number;
-    private top: number;
-    private bottom: number;
+    public readonly borders: Point2D[][];
 
-    public borders: Point2D[][];
+    private readonly left: number;
+    private readonly right: number;
+    private readonly top: number;
+    private readonly bottom: number;
 
     constructor(x: number, width: number, private laneCount: number = 3) {
         this.left = x - width / 2;
         this.right = x + width / 2;
-        this.top = mathh.INFINITY_NEG;
-        this.bottom = mathh.INFINITY;
+        this.top = Mathh.INFINITY_NEG;
+        this.bottom = Mathh.INFINITY;
 
         const topLeft = new Point2D(this.left, this.top);
         const bottomLeft = new Point2D(this.left, this.bottom);
@@ -34,7 +34,7 @@ export class Road implements GameObject {
         ctx.strokeStyle = "white";
 
         for (let i = 1; i < this.laneCount; ++i) {
-            const x = mathh.lerp(this.left, this.right, i / this.laneCount);
+            const x = Mathh.lerp(this.left, this.right, i / this.laneCount);
 
             ctx.setLineDash([10, 10]);
 

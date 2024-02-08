@@ -1,7 +1,9 @@
 export interface NeuralNetwork {
-    initialize(): void;
+    randomize(): void;
     predict(inputs: number[]): number[];
-    mutate(mutationRate: number): void;
-    getModel(): any;
-    setModel(model: any): void;
+    mutate(mutationPropability: number, mutateRate: number): void;
+    crossover(other: NeuralNetwork): NeuralNetwork;
+    getModel(): string;
+    setModel(model: string): void;
+    copy(): NeuralNetwork;
 }

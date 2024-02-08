@@ -1,5 +1,5 @@
 import { Point2D } from "math/point";
-import * as mathutils from "math/math";
+import { Mathh } from "math/math";
 
 export function getIntersection(
     a1: Point2D,
@@ -18,8 +18,8 @@ export function getIntersection(
         if (t >= 0 && t <= 1 && u >= 0 && u <= 1) {
             return {
                 point: new Point2D(
-                    mathutils.lerp(a1.x, a2.x, t),
-                    mathutils.lerp(a1.y, a2.y, t)
+                    Mathh.lerp(a1.x, a2.x, t),
+                    Mathh.lerp(a1.y, a2.y, t)
                 ),
                 offset: t,
             };
