@@ -37,7 +37,22 @@ export class CarPopulation {
 
     loadAndEvolve(mutationPropability: number, mutateRate: number): void {
         this.loadFromStorage();
+
+        console.log("===== Top10 loaded models =====");
+        this.cars.slice(0, 10).forEach((car) => {
+            const ai = car.ai! as SimpleDenseNN;
+            console.log(ai.debughash());
+        });
+        console.log("===============================");
+
         this.evolve(mutationPropability, mutateRate);
+
+        console.log("===== Top10 evolved models =====");
+        this.cars.slice(0, 10).forEach((car) => {
+            const ai = car.ai! as SimpleDenseNN;
+            console.log(ai.debughash());
+        });
+        console.log("===============================");
     }
 
     evolve(mutationPropability: number, mutateRate: number): void {
@@ -49,12 +64,14 @@ export class CarPopulation {
         eliteCars.forEach((car) => (car.normalColor = "Magenta"));
         eliteCars[0].normalColor = "Yellow";
 
-        // Copy the top 10% of the population to the bottom of the population
+        // Copy the top 10% of the population to the bottom of the population in opposite order:
+        // Since they are the best cars, they should rank up pretty quickly. This results in a
+        // population that is improving from the bottom to the top. 
         for (let i = 0; i < numElite; i++) {
             const eliteCar = eliteCars[i];
-            const tmpCar = this.cars[numElite + i]!;
+            const tmpCar = this.cars[populationSize - 1 - i];
             tmpCar.ai!.setModel(eliteCar.ai!.getModel());
-            tmpCar.normalColor = "Green";
+            tmpCar.normalColor = "Coral";
         }
         // Mutate all except the top 10%
         for (let i = numElite; i < populationSize; i++) {
@@ -63,8 +80,8 @@ export class CarPopulation {
         }
 
         /*
-        // Crossover and mutate the rest of the population
-        for (let i = numElite; i < populationSize; i++) {
+        // Crossover and mutate 10%-90% of the population
+        for (let i = numElite; i < populationSize - numElite; i++) {
             const parentA = this.cars[Math.floor(Math.random() * numElite)];
             const parentB = this.cars[Math.floor(Math.random() * numElite)];
 
@@ -83,6 +100,13 @@ export class CarPopulation {
         const ais = this.cars.map((car) => car.ai!.getModel());
         const population = { generation: this.generation, ais };
         localStorage.setItem(this.STORAGE_KEY, JSON.stringify(population));
+
+        console.log("===== Top10 saved models =====");
+        this.cars.slice(0, 10).forEach((car) => {
+            const ai = car.ai! as SimpleDenseNN;
+            console.log(ai.debughash());
+        });
+        console.log("===============================");
 
         console.log("Saved models to local storage");
     }

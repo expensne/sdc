@@ -13,38 +13,16 @@ export class Matrix {
         this.shape = [this.rows, this.cols];
     }
 
-    randomize(func: () => number): Matrix {
-        return this.map((_) => func());
-    }
-
-    copy(): Matrix {
-        let m = new Matrix(this.rows, this.cols);
-        for (let i = 0; i < this.rows; i++) {
-            for (let j = 0; j < this.cols; j++) {
-                m.data[i][j] = this.data[i][j];
-            }
-        }
-        return m;
-    }
-
-    toArray(): number[] {
-        let arr = [];
-        for (let i = 0; i < this.rows; i++) {
-            for (let j = 0; j < this.cols; j++) {
-                arr.push(this.data[i][j]);
-            }
-        }
-        return arr;
-    }
-
-    static from2DArray(arr: number[][]): Matrix {
-        let m = new Matrix(arr.length, arr[0].length);
+    static fromArray2D(arr: number[][]): Matrix {
+        const m = new Matrix(arr.length, arr[0].length);
         m.data = arr;
         return m;
     }
 
-    static fromArray(arr: number[]): Matrix {
-        return new Matrix(arr.length, 1).map((_, i) => arr[i]);
+    static fromArray1D(arr: number[]): Matrix {
+        const m = new Matrix(arr.length, 1);
+        m.data = arr.map((x) => [x]);
+        return m;
     }
 
     static subtract(A: Matrix, B: Matrix) {
@@ -54,17 +32,6 @@ export class Matrix {
         return new Matrix(A.rows, A.cols).map((_, i, j) => A.data[i][j] - B.data[i][j]);
     }
 
-    subtract(A: Matrix | number): Matrix {
-        if (A instanceof Matrix) {
-            if (this.rows !== A.rows || this.cols !== A.cols) {
-                throw new Error("Columns and rows of A must match columns and rows of B.");
-            }
-            return this.map((e, i, j) => e - A.data[i][j]);
-        } else {
-            return this.map((e) => e - A);
-        }
-    }
-
     static add(A: Matrix, B: Matrix) {
         if (A.rows !== B.rows || A.cols !== B.cols) {
             throw new Error("Columns and rows of A must match columns and rows of B.");
@@ -72,35 +39,12 @@ export class Matrix {
         return new Matrix(A.rows, A.cols).map((_, i, j) => A.data[i][j] + B.data[i][j]);
     }
 
-    add(A: Matrix | number): Matrix {
-        if (A instanceof Matrix) {
-            if (this.rows !== A.rows || this.cols !== A.cols) {
-                throw new Error("Columns and rows of A must match columns and rows of B.");
-            }
-            return this.map((e, i, j) => e + A.data[i][j]);
-        } else {
-            return this.map((e) => e + A);
-        }
-    }
     static multiply(A: Matrix, B: Matrix) {
         // Element wise multiplication
         if (A.rows !== B.rows || A.cols !== B.cols) {
             throw new Error("Columns and rows of A must match columns and rows of B.");
         }
         return new Matrix(A.rows, A.cols).map((_, i, j) => A.data[i][j] * B.data[i][j]);
-    }
-
-    multiply(A: Matrix | number): Matrix {
-        if (A instanceof Matrix) {
-            if (this.rows !== A.rows || this.cols !== A.cols) {
-                throw new Error("Columns and rows of A must match columns and rows of B.");
-            }
-            // Element wise multiplication
-            return this.map((e, i, j) => e * A.data[i][j]);
-        } else {
-            // Scalar product
-            return this.map((e) => e * A);
-        }
     }
 
     static dot(A: Matrix, B: Matrix): Matrix {
@@ -116,26 +60,13 @@ export class Matrix {
         });
     }
 
-    dot(A: Matrix): Matrix {
-        if (this.cols !== A.rows) {
-            throw new Error("Columns of A must match rows of B.");
-        }
-        return new Matrix(this.rows, A.cols).map((_, i, j) => {
-            let sum = 0;
-            for (let k = 0; k < this.cols; k++) {
-                sum += this.data[i][k] * A.data[k][j];
-            }
-            return sum;
-        });
-    }
-
     static sum(A: Matrix): number {
         let sum = 0;
-        A.map((e) => (sum += e));
+        A.forEach((e) => (sum += e));
         return sum;
     }
 
-    sum(): number {
+    summed(): number {
         return Matrix.sum(this);
     }
 
@@ -151,6 +82,20 @@ export class Matrix {
         return new Matrix(A.rows, A.cols).map((e, i, j) => func(e, i, j));
     }
 
+    randomize(func: () => number): Matrix {
+        return this.map((_) => func());
+    }
+
+    copy(): Matrix {
+        let m = new Matrix(this.rows, this.cols);
+        for (let i = 0; i < this.rows; i++) {
+            for (let j = 0; j < this.cols; j++) {
+                m.data[i][j] = this.data[i][j];
+            }
+        }
+        return m;
+    }
+
     map(func: (e: number, i: number, j: number) => number): Matrix {
         for (let i = 0; i < this.rows; i++) {
             for (let j = 0; j < this.cols; j++) {
@@ -159,6 +104,15 @@ export class Matrix {
             }
         }
         return this;
+    }
+
+    forEach(func: (e: number, i: number, j: number) => void): void {
+        for (let i = 0; i < this.rows; i++) {
+            for (let j = 0; j < this.cols; j++) {
+                let val = this.data[i][j];
+                func(val, i, j);
+            }
+        }
     }
 
     print() {
@@ -183,5 +137,16 @@ export class Matrix {
         } catch (error) {
             throw new Error("Failed to parse JSON for Matrix deserialization: " + error);
         }
+    }
+
+    toArray2D(): number[][] {
+        return JSON.parse(JSON.stringify(this.data));
+    }
+
+    toArray1D(): number[] {
+        if (this.cols !== 1) {
+            throw new Error("Matrix must have 1 column to convert to 1D array");
+        }
+        return JSON.parse(JSON.stringify(this.data.map((x) => x[0])));
     }
 }

@@ -5,8 +5,7 @@ import { Matrix } from "@/math/matrix";
 export class SimpleDenseNN implements NeuralNetwork {
     public readonly neuronsPerLayer: number[];
     private readonly initFunc: (...args: any[]) => number;
-    public readonly layers: Layer[];
-    //protected readonly layers: Layer[]; // TODO
+    protected readonly layers: Layer[];
 
     constructor(neuronsPerLayer: number[]) {
         this.neuronsPerLayer = neuronsPerLayer;
@@ -23,11 +22,11 @@ export class SimpleDenseNN implements NeuralNetwork {
     }
 
     predict(inputs: number[]): number[] {
-        let outputMat = Matrix.fromArray(inputs);
+        let outputVec = Matrix.fromArray1D(inputs);
         for (let i = 0; i < this.layers.length; ++i) {
-            outputMat = this.layers[i].forward(outputMat);
+            outputVec = this.layers[i].forward(outputVec);
         }
-        return outputMat.toArray().map((x) => Math.round(x));
+        return outputVec.toArray1D().map((x) => Math.round(x));
     }
 
     mutate(mutationPropability: number, mutateRate: number): void {
@@ -92,9 +91,8 @@ export class SimpleDenseNN implements NeuralNetwork {
         let hash = 0;
         for (let i = 0; i < this.layers.length; ++i) {
             const layer = this.layers[i];
-            hash += layer.weight.sum();
-            hash += layer.bias.sum();
-            break;
+            hash += layer.weight.summed();
+            hash += layer.bias.summed();
         }
         return hash;
     }
@@ -128,7 +126,7 @@ class Layer {
     }
 
     forward(input: Matrix): Matrix {
-        const raw = input.transposed().dot(this.weight).add(this.bias);
+        const raw = Matrix.add(Matrix.dot(input.transposed(), this.weight), this.bias);
         const activated = raw.map((x) => Mathh.sigmoid(x));
         return activated.transposed();
     }

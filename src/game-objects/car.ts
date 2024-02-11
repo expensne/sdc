@@ -2,7 +2,7 @@ import { ControlType, Controls } from "./controls";
 import { SimpleDenseNN } from "../nn/simple-dense-nn";
 import { Point2D } from "../math/point";
 import { Sensor } from "./sensor";
-import * as geom from "../math/geom";
+import { Geom } from "../math/geom";
 import { GameObject } from "./game-object";
 import { NeuralNetwork } from "../nn/neural-network";
 
@@ -225,7 +225,7 @@ export class Car implements GameObject {
         if (collisionPolygons.length === 0) return false;
 
         for (const otherPolygon of collisionPolygons) {
-            if (geom.polysIntersect(this.polygon, otherPolygon)) {
+            if (Geom.polysIntersect(this.polygon, otherPolygon)) {
                 return true;
             }
         }

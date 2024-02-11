@@ -1,6 +1,6 @@
 import { Car } from "./car";
 import { Point2D } from "../math/point";
-import * as geom from "../math/geom";
+import { Geom } from "../math/geom";
 import { Mathh } from "../math/math";
 import { GameObject } from "./game-object";
 
@@ -10,7 +10,7 @@ export class Sensor implements GameObject {
 
     private readonly car: Car;
     private readonly rayLength: number;
-    private readonly  fov: number;
+    private readonly fov: number;
     private rays: Point2D[][] = [];
 
     constructor(car: Car, rayCount = 11, rayLength = 300, fov = Math.PI / 1.25) {
@@ -87,7 +87,7 @@ export class Sensor implements GameObject {
         for (const polygon of collisionPolygons) {
             // It's a line
             if (polygon.length == 2) {
-                const intersection = geom.getIntersection(ray[0], ray[1], polygon[0], polygon[1]);
+                const intersection = Geom.getIntersection(ray[0], ray[1], polygon[0], polygon[1]);
                 if (intersection) {
                     intersections.push(intersection);
                 }
@@ -95,7 +95,7 @@ export class Sensor implements GameObject {
             // It's a polygon
             else {
                 for (let i = 0; i < polygon.length; ++i) {
-                    const intersection = geom.getIntersection(
+                    const intersection = Geom.getIntersection(
                         ray[0],
                         ray[1],
                         polygon[i],
