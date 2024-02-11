@@ -1,8 +1,8 @@
-import { Car } from "game-objects/car";
+import { Car } from "./game-objects/car";
 import { Config } from "./config";
-import { ControlType, Controls } from "game-objects/controls";
-import { Road } from "game-objects/road";
-import { Mathh } from "math/math";
+import { ControlType, Controls } from "./game-objects/controls";
+import { Road } from "./game-objects/road";
+import { Mathh } from "./math/math";
 
 export function generateCars(numCars: number, road: Road): Car[] {
     return Array.from({ length: numCars }, () => {

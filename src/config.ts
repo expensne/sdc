@@ -9,7 +9,7 @@ export class Config {
 
     static readonly AI_CAR_ALPHA = 0.5;
     static readonly AI_NUM_CARS = 100;
-    static readonly AI_MUTATION_PROBABILITY = 0.05;
-    static readonly AI_MUTATION_RATE = 0.5;
-    static readonly AI_ROUND_DURATION_IN_SECONDS = 30;
+    static readonly AI_MUTATION_PROBABILITY = 0.5; // good: 0.5
+    static readonly AI_MUTATION_RATE = 1; // good: 1
+    static readonly AI_ROUND_DURATION_IN_SECONDS = 20;
 }

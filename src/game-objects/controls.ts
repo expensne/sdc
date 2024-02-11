@@ -1,4 +1,4 @@
-import { GameObject } from "game-objects/game-object";
+import { GameObject } from "./game-object";
 
 export enum ControlType {
     PLAYER,
@@ -26,7 +26,7 @@ export class Controls implements GameObject {
                 this.bindKeys();
                 break;
             case ControlType.BOT:
-                this.keyMap["ArrowUp"] = true;
+                //this.keyMap["ArrowUp"] = true;
                 break;
         }
     }

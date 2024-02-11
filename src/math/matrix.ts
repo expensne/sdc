@@ -129,6 +129,16 @@ export class Matrix {
         });
     }
 
+    static sum(A: Matrix): number {
+        let sum = 0;
+        A.map((e) => (sum += e));
+        return sum;
+    }
+
+    sum(): number {
+        return Matrix.sum(this);
+    }
+
     static transpose(A: Matrix): Matrix {
         return new Matrix(A.cols, A.rows).map((_, i, j) => A.data[j][i]);
     }
@@ -160,7 +170,7 @@ export class Matrix {
         return JSON.stringify(this);
     }
 
-    static deserialize(data: string): Matrix | null {
+    static deserialize(data: string): Matrix {
         try {
             const m = JSON.parse(data);
             if ("rows" in m && "cols" in m && "data" in m) {
@@ -168,12 +178,10 @@ export class Matrix {
                 matrix.data = m.data;
                 return matrix;
             } else {
-                console.error("Invalid data for Matrix deserialization");
-                return null;
+                throw new Error("Invalid data for Matrix deserialization");
             }
         } catch (error) {
-            console.error("Failed to parse JSON for Matrix deserialization", error);
-            return null;
+            throw new Error("Failed to parse JSON for Matrix deserialization: " + error);
         }
     }
 }

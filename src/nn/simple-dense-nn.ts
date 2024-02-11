@@ -1,11 +1,12 @@
-import { Mathh } from "math/math";
-import { NeuralNetwork } from "nn/neural-network";
-import { Matrix } from "math/matrix";
+import { Mathh } from "@/math/math";
+import { NeuralNetwork } from "@/nn/neural-network";
+import { Matrix } from "@/math/matrix";
 
 export class SimpleDenseNN implements NeuralNetwork {
     public readonly neuronsPerLayer: number[];
     private readonly initFunc: (...args: any[]) => number;
-    protected readonly layers: Layer[];
+    public readonly layers: Layer[];
+    //protected readonly layers: Layer[]; // TODO
 
     constructor(neuronsPerLayer: number[]) {
         this.neuronsPerLayer = neuronsPerLayer;
@@ -46,8 +47,11 @@ export class SimpleDenseNN implements NeuralNetwork {
         }
 
         const thisChild = this.copy() as SimpleDenseNN;
-        const otherLayers = other.layers;
 
+        const otherCopy = other.copy() as SimpleDenseNN;
+        const otherLayers = otherCopy.layers;
+
+        // TODO: not on layer level, but on neuron level
         const crossoverPoint = Math.floor(Math.random() * this.layers.length);
         for (let i = crossoverPoint; i < this.layers.length; ++i) {
             thisChild.layers[i].weight = otherLayers[i].weight;
@@ -58,19 +62,22 @@ export class SimpleDenseNN implements NeuralNetwork {
     }
 
     getModel(): string {
-        const weightsSerialized = this.layers.map((layer) => layer.weight.serialize());
-        const biasesSerialized = this.layers.map((layer) => layer.bias.serialize());
-        const internals = [weightsSerialized, biasesSerialized];
-        return JSON.stringify(internals);
+        const serializedLayers = this.layers.map((layer) => ({
+            weight: layer.weight.serialize(),
+            bias: layer.bias.serialize(),
+        }));
+        return JSON.stringify(serializedLayers);
     }
 
     setModel(model: string): void {
-        const internals = JSON.parse(model);
-        const weights = internals[0];
-        const biases = internals[1];
+        const deserializedLayers = JSON.parse(model);
+        if (deserializedLayers.length !== this.layers.length) {
+            throw new Error("Invalid model");
+        }
+
         this.layers.forEach((layer, i) => {
-            layer.weight = Matrix.deserialize(weights[i])!;
-            layer.bias = Matrix.deserialize(biases[i])!;
+            layer.weight = Matrix.deserialize(deserializedLayers[i].weight);
+            layer.bias = Matrix.deserialize(deserializedLayers[i].bias);
         });
     }
 
@@ -78,6 +85,18 @@ export class SimpleDenseNN implements NeuralNetwork {
         const nn = new SimpleDenseNN(this.neuronsPerLayer);
         nn.setModel(this.getModel());
         return nn;
+    }
+
+    // TODO remove
+    debughash(): number {
+        let hash = 0;
+        for (let i = 0; i < this.layers.length; ++i) {
+            const layer = this.layers[i];
+            hash += layer.weight.sum();
+            hash += layer.bias.sum();
+            break;
+        }
+        return hash;
     }
 }
 

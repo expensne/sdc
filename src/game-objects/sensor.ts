@@ -1,8 +1,8 @@
 import { Car } from "./car";
 import { Point2D } from "../math/point";
-import * as geom from "math/geom";
-import { Mathh } from "math/math";
-import { GameObject } from "game-objects/game-object";
+import * as geom from "../math/geom";
+import { Mathh } from "../math/math";
+import { GameObject } from "./game-object";
 
 export class Sensor implements GameObject {
     public readonly rayCount: number;

@@ -1,9 +1,9 @@
-import { Road } from "game-objects/road";
+import { Road } from "./game-objects/road";
 import { Config } from "./config";
 import { generateCars, generateTraffic } from "./generators";
-import { UI } from "util/html";
-import { CarPopulation } from "evolution/population";
-import { Car } from "game-objects/car";
+import { UI } from "./util/html";
+import { CarPopulation } from "./evolution/population";
+import { Car } from "./game-objects/car";
 
 class Game {
     private readonly canvas: HTMLCanvasElement;
@@ -14,7 +14,6 @@ class Game {
     private road: Road = undefined!;
     private traffic: Car[] = undefined!;
     private cars: Car[] = undefined!;
-    private epochTime: number = undefined!;
 
     private msPerUpdate: number = 0;
     private previous: number = 0;
@@ -118,7 +117,7 @@ class Game {
 
         ctx.globalAlpha = Config.AI_CAR_ALPHA;
         // Draw backwards so that the first car is on top
-        for(let i = numCars -1; i >= 0; i--) {
+        for (let i = numCars - 1; i >= 0; i--) {
             this.cars[i].draw(ctx);
         }
         ctx.globalAlpha = 1;
@@ -154,6 +153,7 @@ async function startNewGame() {
         );
 
         game.stopLoop();
+        await new Promise((resolve) => setTimeout(resolve, 500));
         game.carPopulation.saveToStorage();
 
         await new Promise((resolve) => setTimeout(resolve, 500));

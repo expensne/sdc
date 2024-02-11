@@ -1,5 +1,5 @@
-import { Point2D } from "math/point";
-import { Mathh } from "math/math";
+import { Point2D } from "./point";
+import { Mathh } from "./math";
 
 export function getIntersection(
     a1: Point2D,

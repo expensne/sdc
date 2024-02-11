@@ -1,6 +1,6 @@
-import { Mathh } from "math/math";
-import { Point2D } from "math/point";
-import { GameObject } from "game-objects/game-object";
+import { Mathh } from "../math/math";
+import { Point2D } from "../math/point";
+import { GameObject } from "./game-object";
 
 export class Road implements GameObject {
     public readonly borders: Point2D[][];

@@ -1,4 +1,5 @@
-import { Car } from "game-objects/car";
+import { Car } from "../game-objects/car";
+import { SimpleDenseNN } from "../nn/simple-dense-nn";
 
 export class CarPopulation {
     private readonly STORAGE_KEY = "nn-models";
@@ -48,15 +49,33 @@ export class CarPopulation {
         eliteCars.forEach((car) => (car.normalColor = "Magenta"));
         eliteCars[0].normalColor = "Yellow";
 
+        // Copy the top 10% of the population to the bottom of the population
+        for (let i = 0; i < numElite; i++) {
+            const eliteCar = eliteCars[i];
+            const tmpCar = this.cars[numElite + i]!;
+            tmpCar.ai!.setModel(eliteCar.ai!.getModel());
+            tmpCar.normalColor = "Green";
+        }
+        // Mutate all except the top 10%
+        for (let i = numElite; i < populationSize; i++) {
+            const car = this.cars[i];
+            car.ai!.mutate(mutationPropability, mutateRate);
+        }
+
+        /*
         // Crossover and mutate the rest of the population
         for (let i = numElite; i < populationSize; i++) {
             const parentA = this.cars[Math.floor(Math.random() * numElite)];
             const parentB = this.cars[Math.floor(Math.random() * numElite)];
 
-            const childModel = parentA.ai!.crossover(parentB.ai!);
-            this.cars[i].ai!.setModel(childModel.getModel());
-            this.cars[i].ai!.mutate(mutationPropability, mutateRate);
+            const child = parentA.ai!.crossover(parentB.ai!);
+            child.mutate(mutationPropability, mutateRate);
+
+            //this.cars[i].ai = child;
+            this.cars[i].ai!.setModel(child.getModel());
         }
+        */
+
         this.generation++;
     }
 
@@ -69,13 +88,16 @@ export class CarPopulation {
     }
 
     loadFromStorage(): void {
-        const loadedModels = localStorage.getItem(this.STORAGE_KEY);
-        if (!loadedModels) {
+        const population = localStorage.getItem(this.STORAGE_KEY);
+        if (!population) {
             console.log("No models found in local storage");
             return;
         }
 
-        const { generation, ais } = JSON.parse(loadedModels);
+        const parsedPopulation = JSON.parse(population);
+        const generation = parsedPopulation.generation;
+        const ais = parsedPopulation.ais;
+
         this.generation = generation;
 
         if (ais.some((ai: string) => !ai)) {
@@ -86,9 +108,9 @@ export class CarPopulation {
             throw new Error();
         }
 
-        for (let i = 0; i < ais.length; i++) {
-            this.cars[i].ai!.setModel(ais[i]);
-        }
+        this.cars.forEach((car, i) => {
+            car.ai!.setModel(ais[i]);
+        });
 
         console.log("Restored models from local storage");
     }
