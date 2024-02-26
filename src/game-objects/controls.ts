@@ -26,7 +26,7 @@ export class Controls implements GameObject {
                 this.bindKeys();
                 break;
             case ControlType.BOT:
-                //this.keyMap["ArrowUp"] = true;
+                this.keyMap["ArrowUp"] = true;
                 break;
         }
     }
