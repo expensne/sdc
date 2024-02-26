@@ -88,8 +88,8 @@ export class CarPopulation {
             const child = parentA.ai!.crossover(parentB.ai!);
             child.mutate(mutationPropability, mutateRate);
 
-            //this.cars[i].ai = child;
-            this.cars[i].ai!.setModel(child.getModel());
+            this.cars[i].ai = child;
+            //this.cars[i].ai!.setModel(child.getModel());
         }
         */
 

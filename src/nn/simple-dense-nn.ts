@@ -51,8 +51,9 @@ export class SimpleDenseNN implements NeuralNetwork {
         const otherLayers = otherCopy.layers;
 
         // TODO: not on layer level, but on neuron level
-        const crossoverPoint = Math.floor(Math.random() * this.layers.length);
-        for (let i = crossoverPoint; i < this.layers.length; ++i) {
+        const layerCrossoverPoint = Math.floor(Math.random() * this.layers.length);
+
+        for (let i = layerCrossoverPoint; i < this.layers.length; ++i) {
             thisChild.layers[i].weight = otherLayers[i].weight;
             thisChild.layers[i].bias = otherLayers[i].bias;
         }
